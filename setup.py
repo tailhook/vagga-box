@@ -2,19 +2,22 @@
 
 from setuptools import setup
 
-setup(name='vagga-docker',
+setup(name='vagga-box',
       version='0.1',
-      description='A wrapper to run vagga in docker (easier on osx)',
+      description='A wrapper to run vagga in virtualbox (easier on osx)',
       author='Paul Colomiets',
       author_email='paul@colomiets.name',
-      url='http://github.com/tailhook/vagga-docker',
-      packages=['vagga_docker'],
+      url='http://github.com/tailhook/vagga-box',
+      packages=['vagga_box'],
       install_requires=[
-        'docker-py',
         'PyYaml',
+        'macfsevents',
       ],
       entry_points = {
-          'console_scripts': ['vagga=vagga_docker.main:main'],
+          'console_scripts': [
+              'vagga=vagga_box.main:main',
+              'unison-fsevents=unox:main',
+          ],
       },
       classifiers=[
           'Development Status :: 4 - Beta',
