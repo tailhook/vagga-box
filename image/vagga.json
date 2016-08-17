@@ -7,8 +7,8 @@
     "guest_os_type": "Ubuntu_64",
     "disk_size": 10240,
 
-    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.4/releases/x86_64/alpine-3.4.3-x86_64.iso",
-    "iso_checksum": "f127edf9e72125a577c7f20a19c4fcf17c94984e",
+    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.4/releases/x86_64/alpine-vanilla-3.4.3-x86_64.iso",
+    "iso_checksum": "e2ac2c35da8c277d0acdd28880e6e006e91274fd",
     "iso_checksum_type": "sha1",
 
     "boot_wait": "30s",
@@ -21,8 +21,8 @@
       "us<enter>",
       "vagga<enter>",
       "done<enter>no<enter><enter><enter>",
-      "vagga0.7<enter>",
-      "vagga0.7<enter>",
+      "vagga<enter>",
+      "vagga<enter>",
       "UTC<enter><wait5><enter>",
       "1<enter>",
       "openssh<enter><wait5>",
@@ -32,30 +32,16 @@
       "y<enter><wait10><wait10><wait10><wait10><wait10>",
       "killall -9 nc<enter>",
       "service sshd stop<enter>",
-
-      "sysctl -w kernel.grsecurity.chroot_caps=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_chmod=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_chroot=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_fchdir=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_mknod=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_mount=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_pivot=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_shmat=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_sysctl=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_deny_unix=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_enforce_chdir=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_findtask=0<enter>",
-      "sysctl -w kernel.grsecurity.chroot_restrict_nice=0<enter>",
-
       "mount /dev/sda3 /mnt<enter><wait>",
       "mount -o bind /dev /mnt/dev<enter>",
-      "mount -t tmpfs -o size=1G /tmp /mnt/tmp<enter>",
+      "mount -t tmpfs -o size=1G tmpfs /mnt/tmp<enter>",
+      "mount -t tmpfs -o size=1G /mnt/var/cache/apk<enter>",
       "chroot /mnt<enter>",
       "ln -sf /bin/ash /bin/bash<enter>",
       "mount -t proc none /proc<enter>",
       "mount -t devpts devpts /dev/pts<enter>",
-      "apk add sudo wget bash linux-vanilla<enter><wait10><wait10><wait10>",
-      "adduser user<enter>vagga0.7<enter>vagga0.7<enter>",
+      "apk add sudo wget bash<enter><wait10><wait10><wait10>",
+      "adduser user<enter>vagga<enter>vagga<enter>",
       "killall -9 udhcpc<enter>",
       "ifconfig eth0 down<enter>",
       "setup-interfaces<enter>",
@@ -71,23 +57,24 @@
     "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
 
     "ssh_username": "user",
-    "ssh_password": "vagga0.7",
+    "ssh_password": "vagga",
     "ssh_port": 22,
     "ssh_wait_timeout": "10m",
 
     "vboxmanage": [
+      ["modifyvm", "{{.Name}}", "--audio", "none"],
       ["modifyvm", "{{.Name}}", "--memory", "2048"],
       ["modifyvm", "{{.Name}}", "--cpus", "2"],
       ["modifyvm", "{{.Name}}", "--natpf1", "guestssh,tcp,,7022,,22"]
     ],
 
-    "shutdown_command": "echo 'user'|sudo -S poweroff"
+    "shutdown_command": "sudo poweroff"
   }],
   "provisioners": [{
     "type": "shell",
-    "execute_command": "echo 'user' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+    "execute_command": "sudo bash '{{.Path}}'",
     "scripts": [
-      "scripts/vagga.sh"
+      "setup.sh"
     ]
   }]
 }
