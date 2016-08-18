@@ -1,4 +1,7 @@
 {
+  "variables": {
+    "http_proxy": "{{env `http_proxy`}}"
+  },
   "builders": [{
     "type": "virtualbox-iso",
     "virtualbox_version_file": ".vbox_version",
@@ -16,31 +19,32 @@
       "root<enter><wait>",
       "nc -lp 22&<enter>",
       "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+      "export http_proxy={{user `http_proxy`}}<enter><wait>",
       "setup-alpine<enter><wait>",
       "us<enter>",
       "us<enter>",
       "vagga<enter>",
       "done<enter>no<enter><enter><enter>",
       "vagga<enter>",
-      "vagga<enter>",
+      "vagga<enter><wait>",
       "UTC<enter><wait5><enter>",
-      "1<enter>",
+      "1<enter><wait>",
       "openssh<enter><wait5>",
       "openntpd<enter><wait>",
       "sda<enter>",
       "sys<enter>",
-      "y<enter><wait10><wait10><wait10><wait10><wait10>",
+      "y<enter><wait10><wait10><wait10>",
       "killall -9 nc<enter>",
       "service sshd stop<enter>",
       "mount /dev/sda3 /mnt<enter><wait>",
       "mount -o bind /dev /mnt/dev<enter>",
       "mount -t tmpfs -o size=1G tmpfs /mnt/tmp<enter>",
-      "mount -t tmpfs -o size=1G /mnt/var/cache/apk<enter>",
+      "mount -t tmpfs -o size=1G tmpfs /mnt/var/cache/apk<enter>",
       "chroot /mnt<enter>",
       "ln -sf /bin/ash /bin/bash<enter>",
       "mount -t proc none /proc<enter>",
       "mount -t devpts devpts /dev/pts<enter>",
-      "apk add sudo wget bash<enter><wait10><wait10><wait10>",
+      "apk add -U sudo wget bash<enter><wait10>",
       "adduser user<enter>vagga<enter>vagga<enter>",
       "killall -9 udhcpc<enter>",
       "ifconfig eth0 down<enter>",
@@ -72,7 +76,7 @@
   }],
   "provisioners": [{
     "type": "shell",
-    "execute_command": "sudo bash '{{.Path}}'",
+    "execute_command": "sudo bash -c  'export http_proxy={{user `http_proxy`}}; {{.Path}}'",
     "scripts": [
       "setup.sh"
     ]

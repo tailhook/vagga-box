@@ -56,7 +56,8 @@ rc-update add nfs
 rc-update add nfsmount
 rc-update add netmount
 
-apk add virtualbox-guest-additions shadow-uidmap --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+apk add virtualbox-guest-additions --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+apk add shadow-uidmap --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 
 cat <<SYSCTL > /etc/sysctl.d/01-vagga.conf
 fs.inotify.max_user_watches=131072
