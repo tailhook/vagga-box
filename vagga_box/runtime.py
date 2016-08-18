@@ -5,6 +5,7 @@ class Vagga(object):
         self.vagga_dir = path / '.vagga'
         self.containers = config.get('containers', {})
         self.commands = config.get('commands', {})
+        self.ignore_list = config.get('_ignore-paths', [])
         self.arguments = arguments
 
         if arguments.command:
