@@ -5,7 +5,7 @@ description="Unison daemon"
 port=7767
 pidfile=/run/unison.pid
 command=/bin/unison
-command_args="-socket \$port"
+command_args="-socket $port"
 command_background=true
 command_user=user
 

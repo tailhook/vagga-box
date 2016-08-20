@@ -9,25 +9,26 @@ chmod -R go-rwsx /home/user/.ssh
 chmod 0755 /home/user/.ssh
 chmod 0644 /home/user/.ssh/authorized_keys
 
-wget -O /bin/unison $HTTP_PREFIX/unison
+curl -sfS $HTTP_PREFIX/unison > /bin/unison
 chmod +x /bin/unison
-wget -O /etc/init.d/unison $HTTP_PREFIX/unison.rc
+curl -sfS $HTTP_PREFIX/unison.rc > /etc/init.d/unison
 chmod +x /etc/init.d/unison
 rc-update add unison
 
 apk add nfs-utils
 mkdir /vagga
 mkfs.ext4 /dev/sdb1
-mount /dev/sdb1 /vagga
+echo "/dev/sdb1 /vagga ext4 rw,data=ordered,noatime,discard 0 2" >> /etc/fstab
+mount /vagga
 mkdir /vagga/.unison /vagga/.cache
 chown user /vagga /vagga/.unison /vagga/.cache
-wget -O /home/user/.vagga.yaml $HTTP_PREFIX/vagga.settings.yaml
-mkdir -p /home/user/.local/bin
-wget -O /home/user/.local/bin/vagga $HTTP_PREFIX/vagga.sh
-chmod +x /home/user/.local/bin/vagga
+curl -sfS $HTTP_PREFIX/vagga.settings.yaml > /home/user/.vagga.yaml
+curl -sfS $HTTP_PREFIX/vagga-ssh.sh > /usr/local/bin/vagga-ssh.sh
+chmod +x /usr/local/bin/vagga-ssh.sh
 
-wget -O /home/user/.local/bin/vagga-upgrade $HTTP_PREFIX/upgrade-vagga.sh
-chmod +x /home/user/.local/bin/vagga-upgrade
+curl -sfS $HTTP_PREFIX/upgrade-vagga.sh > /usr/local/bin/upgrade-vagga
+chmod +x /usr/local/bin/upgrade-vagga
+/usr/local/bin/upgrade-vagga
 
 cat <<NFS >> /etc/exports
 /vagga *(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000)
@@ -48,7 +49,9 @@ SUBUID
 cat <<SUBGID > /etc/subgid
 user:100000:165536
 SUBGID
-echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
+cat <<SSHCONFIG >> /etc/ssh/sshd_config
+PermitUserEnvironment yes
+AcceptEnv VAGGA_*
+SSHCONFIG
 
-
-sync
+rm -rf /var/run/*

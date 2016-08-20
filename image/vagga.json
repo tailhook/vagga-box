@@ -14,7 +14,7 @@
     "iso_checksum": "e2ac2c35da8c277d0acdd28880e6e006e91274fd",
     "iso_checksum_type": "sha1",
 
-    "boot_wait": "30s",
+    "boot_wait": "40s",
     "boot_command": [
       "root<enter><wait>",
       "nc -lp 22&<enter>",
@@ -39,13 +39,13 @@
       "service sshd stop<enter>",
       "mount /dev/sda3 /mnt<enter><wait>",
       "mount -o bind /dev /mnt/dev<enter>",
-      "mount -t tmpfs -o size=1G tmpfs /mnt/tmp<enter>",
-      "mount -t tmpfs -o size=1G tmpfs /mnt/var/cache/apk<enter>",
+      "mount -t tmpfs -o size=100m tmpfs /mnt/tmp<enter>",
+      "mount -t tmpfs -o size=100m tmpfs /mnt/run<enter>",
       "chroot /mnt<enter>",
       "ln -sf /bin/ash /bin/bash<enter>",
       "mount -t proc none /proc<enter>",
       "mount -t devpts devpts /dev/pts<enter>",
-      "apk add -U sudo wget bash<enter><wait10>",
+      "apk add -U sudo curl bash<enter><wait10>",
       "adduser user<enter>vagga<enter>vagga<enter>",
       "killall -9 udhcpc<enter>",
       "ifconfig eth0 down<enter>",
@@ -61,7 +61,6 @@
     ],
 
     "http_directory": "http",
-    "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
 
     "ssh_username": "user",
     "ssh_password": "vagga",
