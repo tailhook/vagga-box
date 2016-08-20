@@ -1,14 +1,24 @@
+import re
+import time
 import pathlib
 import warnings
 import hashlib
 import subprocess
+from contextlib import contextmanager
 
+from . import BASE
 
-BASE = pathlib.Path().home() / '.vagga'
+PORT_RE = re.compile('name\s*=\s*port_(\d+),')
+
 IMAGE_VERSION = '0.1'
 IMAGE_NAME = 'virtualbox-image-{}.vmdk'.format(IMAGE_VERSION)
 IMAGE_URL = 'http://files.zerogw.com/vagga/' + IMAGE_NAME
 IMAGE_SHA256 = 'xx'
+
+STORAGE_VERSION = '0.1'
+STORAGE_NAME = 'virtualbox-storage-{}.vmdk'.format(IMAGE_VERSION)
+STORAGE_URL = 'http://files.zerogw.com/vagga/' + IMAGE_NAME
+STORAGE_SHA256 = 'xx'
 
 
 def check_sha256(filename, sum):
@@ -45,10 +55,12 @@ def create_vm():
         '--add', 'sata'])
     subprocess.check_call(['VBoxManage', 'storageattach', tmpname,
         '--storagectl', 'SATA Controller',
-        '--device', '0',
-        '--port', '0',
-        '--type', 'hdd',
-        '--medium', str(BASE / 'vm/current.vdi')])
+        '--device', '0', '--port', '0', '--type', 'hdd',
+        '--medium', str(BASE / 'vm/image.vdi')])
+    subprocess.check_call(['VBoxManage', 'storageattach', tmpname,
+        '--storagectl', 'SATA Controller',
+        '--device', '0', '--port', '1', '--type', 'hdd',
+        '--medium', str(BASE / 'vm/storage.vdi')])
     subprocess.check_call(['VBoxManage', 'modifyvm', tmpname,
         '--name', 'vagga-' + IMAGE_VERSION])
     return find_vm()
@@ -67,18 +79,12 @@ def find_vm():
     return None, None
 
 
-def init_vm():
-    if not BASE.exists():
-        BASE.mkdir()
+def download_image(url, basename, hash, destination):
 
-    subprocess.run(
-        ['VBoxManage', 'unregistervm', 'vagga-tmp', '--delete'],
-        stderr=subprocess.DEVNULL)
-
-    if not (BASE / 'vm/current.vdi').exists():
+    if not destination.exists():
 
         image_dir = BASE / 'downloads'
-        image_path = image_dir / IMAGE_NAME
+        image_path = image_dir / basename
 
         if not image_dir.exists():
             image_dir.mkdir()
@@ -86,14 +92,38 @@ def init_vm():
         if not image_path.exists():
             tmp_path = image_path.with_extension('tmp')
             subprocess.check_call(
-                ['wget', '--continue', '-O', tmp_path,
-                 IMAGE_URL])
-            check_sha256(tmp_path, IMAGE_SHA256)
+                ['wget', '--continue', '-O', tmp_path, url])
+            check_sha256(tmp_path, hash)
             tmp_path.rename(image_path)
 
         subprocess.check_call([
             'VBoxManage', 'clonehd', '--format', 'vdi',
-            str(image_path), str(BASE / 'vm/current.vdi')])
+            str(image_path), str(destination)])
+
+        return True
+
+
+def check_running(cur_id):
+    info = subprocess.check_output(['VBoxManage', 'showvminfo', cur_id])
+    for line in info.decode('latin-1').splitlines():
+        if line.startswith('State:'):
+            if line.split()[1] == 'running':
+                return True
+
+
+def init_vm(new_storage_callback):
+    if not BASE.exists():
+        BASE.mkdir()
+
+    subprocess.run(
+        ['VBoxManage', 'unregistervm', 'vagga-tmp', '--delete'],
+        stderr=subprocess.DEVNULL)
+
+    download_image(IMAGE_URL, IMAGE_NAME, IMAGE_SHA256, BASE / 'vm/image.vdi')
+    new_storage = download_image(STORAGE_URL, STORAGE_NAME,
+                   STORAGE_SHA256, BASE / 'vm/storage.vdi')
+    if new_storage:
+        new_storage_callback()
 
     cur_id, cur_version = find_vm()
     if cur_id is None:
@@ -103,4 +133,36 @@ def init_vm():
             "Please run vagga _box_upgrade"
             .format(IMAGE_VERSION, cur_version))
 
-    subprocess.run(['VBoxManage', 'startvm', cur_id, '--type', 'headless'])
+    if not check_running(cur_id):
+        subprocess.check_call(['VBoxManage', 'startvm', cur_id,
+            '--type', 'headless'])
+
+    return cur_id
+
+
+@contextmanager
+def expose_ports(vm, ports):
+
+    info = subprocess.check_output(['VBoxManage', 'showvminfo', vm])
+    already = set()
+    for line in info.decode('latin-1').splitlines():
+        if line.startswith('NIC 1 Rule'):
+            m = PORT_RE.search(line)
+            if m:
+                already.add(int(m.group(1)))
+
+    left = ports - already
+    if left:
+        cmdline = ['VBoxManage', 'controlvm', vm, 'natpf1']
+        for port in left:
+            cmdline.append('port_{0},tcp,,{0},,{0}'.format(port))
+        subprocess.check_call(cmdline)
+    try:
+        yield
+    finally:
+        if ports:
+            cmdline = ['VBoxManage', 'controlvm', vm, 'natpf1']
+            for port in ports:
+                cmdline.append('delete')
+                cmdline.append('port_{0}'.format(port))
+            subprocess.check_call(cmdline)
