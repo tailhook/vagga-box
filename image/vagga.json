@@ -8,7 +8,7 @@
     "headless": false,
 
     "guest_os_type": "Ubuntu_64",
-    "disk_size": 10240,
+    "disk_size": 1024,
 
     "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.4/releases/x86_64/alpine-vanilla-3.4.3-x86_64.iso",
     "iso_checksum": "e2ac2c35da8c277d0acdd28880e6e006e91274fd",
@@ -34,6 +34,7 @@
       "sda<enter>",
       "sys<enter>",
       "y<enter><wait10><wait10><wait10>",
+      "echo ,,L | sfdisk /dev/sdb<enter><wait>",
       "killall -9 nc<enter>",
       "service sshd stop<enter>",
       "mount /dev/sda3 /mnt<enter><wait>",
@@ -54,7 +55,9 @@
       "done<enter>no<enter>",
       "echo 'user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers<enter>",
       "/usr/sbin/sshd<enter>",
-      "ifup eth0<enter>"
+      "ifup eth0<enter>",
+      "echo http://{{ .HTTPIP }}:{{ .HTTPPort }}/ > /tmp/http<enter>",
+      "echo {{ .HTTPIP }} > /tmp/no_proxy<enter>"
     ],
 
     "http_directory": "http",
@@ -69,7 +72,17 @@
       ["modifyvm", "{{.Name}}", "--audio", "none"],
       ["modifyvm", "{{.Name}}", "--memory", "2048"],
       ["modifyvm", "{{.Name}}", "--cpus", "2"],
-      ["modifyvm", "{{.Name}}", "--natpf1", "guestssh,tcp,,7022,,22"]
+      ["modifyvm", "{{.Name}}", "--natpf1", "guestssh,tcp,,7022,,22"],
+      ["createhd", "--format", "VDI", "--filename", "storage.vdi",
+        "--size", "20480"],
+      ["storagectl", "{{.Name}}",
+        "--name", "SATA Controller", "--add", "sata"],
+      ["storageattach", "{{.Name}}",
+        "--storagectl", "SATA Controller",
+        "--device", "0",
+        "--port", "1",
+        "--type", "hdd",
+        "--medium", "storage.vdi"]
     ],
 
     "shutdown_command": "sudo poweroff"
