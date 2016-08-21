@@ -1,3 +1,4 @@
 /output-virtualbox-iso
 /packer_cache
 /http/unison
+/http/unison-fsmonitor
