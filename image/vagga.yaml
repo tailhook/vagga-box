@@ -5,15 +5,17 @@ _ignore-dirs:
 containers:
   unison:
     setup:
-    - !Alpine v3.4
-    - !Repo edge/testing
-    - !Install [alpine-sdk, inotify-tools-dev, ocaml]
+    - !Ubuntu xenial
+    - !UbuntuUniverse
+    - !Install [ocaml, inotify-tools, curl, ca-certificates, build-essential]
 
 commands:
   build: !Command
     environ:
       # Note this version must match the one in brew
       UNISON_VERSION: 2.48.4
+      HOME: /root
+    container: unison
     run: |
       set -ex
       [ -d /work/http ] || mkdir /work/http
@@ -21,4 +23,5 @@ commands:
       curl -O http://www.seas.upenn.edu/~bcpierce/unison/download/releases/unison-$UNISON_VERSION/unison-$UNISON_VERSION.tar.gz
       tar -xzf unison-$UNISON_VERSION.tar.gz
       cd src
-      make GLIBC_SUPPORT_INOTIFY=true UISTYLE=text INSTALLDIR=/work NATIVE=true STATIC=true install
+      make GLIBC_SUPPORT_INOTIFY=true UISTYLE=text NATIVE=true STATIC=true unison unison-fsmonitor
+      cp unison unison-fsmonitor /work/http
