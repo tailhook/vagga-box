@@ -13,9 +13,6 @@ curl -sfS $HTTP_PREFIX/unison > /bin/unison
 chmod +x /bin/unison
 curl -sfS $HTTP_PREFIX/unison-fsmonitor > /bin/unison-fsmonitor
 chmod +x /bin/unison-fsmonitor
-curl -sfS $HTTP_PREFIX/unison.rc > /etc/init.d/unison
-chmod +x /etc/init.d/unison
-rc-update add unison
 
 apk add nfs-utils
 mkdir /vagga
