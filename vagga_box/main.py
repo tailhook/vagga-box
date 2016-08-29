@@ -52,6 +52,52 @@ def main():
         # TODO(tailhook) should we use RUST_LOG like in original vagga?
         level=os.environ.get('VAGGA_LOG', 'WARNING'))
 
+    if sys.argv[1:2] == ['_box']:
+        # use real argparse here
+        if sys.argv[2:3] == ['ssh']:
+            returncode = subprocess.Popen(
+                    BASE_SSH_COMMAND + sys.argv[2:]
+                ).wait()
+            return sys.exit(returncode)
+        elif sys.argv[2:3] == ['upgrade_vagga']:
+            returncode = subprocess.Popen(
+                    BASE_SSH_COMMAND + ['/usr/local/bin/upgrade-vagga'],
+                ).wait()
+            return sys.exit(returncode)
+        elif sys.argv[2:3] == ['mount']:
+            dir = BASE / 'remote'
+            if not dir.exists():
+                dir.mkdir()
+            cmd = ['sudo', 'mount', '-t', 'nfs',
+                   '-o', 'vers=4,resvport,port=7049',
+                   '127.0.0.1:/vagga', str(dir)]
+            print("Running", ' '.join(cmd), file=sys.stderr)
+            if (dir / 'lost+found').exists():
+                print("Error looks like your volume is already mounted.",
+                    file=sys.stderr)
+                print("You only need to mount the volume once",
+                    file=sys.stderr)
+                return sys.exit(1)
+            returncode = subprocess.Popen(cmd).wait()
+            if returncode == 0:
+                # TODO(tailhook) Simple heuristics, may be improved
+                if os.path.exists('.vagga/.virtualbox-volume'):
+                    with open('.vagga/.virtualbox-volume') as f:
+                        volume = f.read().strip()
+                    print("Now you can add "
+                          "~/.vagga/remote/"+volume+
+                              "/.vagga/<container-name>/dir "
+                          "to the search paths of your IDE")
+                else:
+                    print("Now you can add "
+                          "~/.vagga/remote/<project-name>"
+                          "/.vagga/<container-name>/dir "
+                          "to the search paths of your IDE")
+                    print("<project-name> will be in "
+                          "`.vagga/.virtualbox-volume` "
+                          "after you run vagga command for the first time")
+            return sys.exit(returncode)
+
     path, cfg, suffix = config.get_config()
     args = arguments.parse_args()
 
@@ -76,18 +122,14 @@ def main():
     })
 
     with unison.start_sync(vagga):
-        if sys.argv[1:2] == ['_box_ssh']:
-            result = subprocess.run(
-                BASE_SSH_COMMAND + sys.argv[2:],
-                env=env)
-        else:
-            with virtualbox.expose_ports(vm, vagga.exposed_ports()):
-                result = subprocess.run(
+        with virtualbox.expose_ports(vm, vagga.exposed_ports()):
+            result = subprocess.Popen(
                     BASE_SSH_COMMAND + [
                     '-q',
                     '/usr/local/bin/vagga-ssh.sh',
                     ] + sys.argv[1:],
-                    env=env)
+                    env=env,
+                ).wait()
 
-    sys.exit(result.returncode)
+    sys.exit(result)
 
