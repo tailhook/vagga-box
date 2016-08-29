@@ -13,13 +13,17 @@ Installation
 
 Currently it's (you need python >= 3.4)::
 
-    $ brew install python3 unison unox
+    $ brew install python3 unison
     $ pip3 install git+http://github.com/tailhook/vagga-box
     [ .. snip .. ]
     $ vagga
     Available commands:
         run
-
+    # IDE support (must run after every reboot or restart of VM)
+    $ vagga _box mount
+    Running sudo mount -t nfs -o vers=4,resvport,port=7049 127.0.0.1:/vagga /Users/myuser/.vagga/remote
+    Password:
+    Now you can add ~/.vagga/remote/<project-name>/.vagga/<container-name>/dir to the search paths of your IDE
 
 
 Short FAQ
@@ -30,7 +34,7 @@ vagga as soon as is proven to be useful. Or may be we leave it in python if
 it would be easier to install.
 
 **So should I try this version or wait it integrated in vagga?** Definitely you
-should. The integrated version will work the same.
+should try. The integrated version will work the same.
 
 **Is there any difference between this and vagga on linux?** There are two key
 differences:
@@ -39,10 +43,17 @@ differences:
 host system
 * we keep all the container files (and a copy of the project) in the virtualbox
   to view it from the host system mount nfs volume
+* to make filesync fast you can add some dirs to the ignore list (`_ignore-dirs`
+  setting)
 
 __ https://github.com/tailhook/vagga/issues/269
 
 .. code-block:: yaml
+
+    _ignore-dirs:
+    - .git
+    - tmp
+    - data
 
     containers:
       django:
@@ -60,7 +71,7 @@ __ https://github.com/tailhook/vagga/issues/269
 **Please report if you find any other differences using the tool**. Ah, but
 exact text of some error messages may differ, don't be too picky :)
 
-**Why `_expose-dirs` are underscored?** This is a standard
+**Why `_expose-ports` are underscored?** This is a standard
 way to add extension metadata or user-defined things in vagga.yaml. We will
 remove the underscore as soon as integrate it into main code. Fixing
 underscores isn't going to be a big deal.
