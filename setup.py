@@ -16,7 +16,7 @@ setup(name='vagga-box',
       entry_points = {
           'console_scripts': [
               'vagga=vagga_box.main:main',
-              'unison-fsevents=unox:main',
+              'unison-fsmonitor=vagga_box.unox:main',
           ],
       },
       classifiers=[
