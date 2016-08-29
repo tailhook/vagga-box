@@ -19,11 +19,16 @@ Currently it's (you need python >= 3.4)::
     $ vagga
     Available commands:
         run
-    # IDE support (must run after every reboot or restart of VM)
+
+IDE support is enabled by the following command (and requires sudo access):
+
     $ vagga _box mount
     Running sudo mount -t nfs -o vers=4,resvport,port=7049 127.0.0.1:/vagga /Users/myuser/.vagga/remote
     Password:
     Now you can add ~/.vagga/remote/<project-name>/.vagga/<container-name>/dir to the search paths of your IDE
+
+You need to run it each time your machine is rebooted, or if you restarted your
+virtualbox manually.
 
 
 Short FAQ
@@ -40,7 +45,7 @@ should try. The integrated version will work the same.
 differences:
 
 * you need to export ports that you want to be accessible from the
-host system
+  host system
 * we keep all the container files (and a copy of the project) in the virtualbox
   to view it from the host system mount nfs volume
 * to make filesync fast you can add some dirs to the ignore list (`_ignore-dirs`

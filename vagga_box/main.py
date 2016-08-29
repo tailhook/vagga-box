@@ -26,6 +26,24 @@ BASE_SSH_COMMAND = [
 VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
 
 
+def ide_hint():
+    if os.path.exists('.vagga/.virtualbox-volume'):
+        with open('.vagga/.virtualbox-volume') as f:
+            volume = f.read().strip()
+        print("Now you can add "
+              "~/.vagga/remote/"+volume+
+                  "/.vagga/<container-name>/dir "
+              "to the search paths of your IDE")
+    else:
+        print("Now you can add "
+              "~/.vagga/remote/<project-name>"
+              "/.vagga/<container-name>/dir "
+              "to the search paths of your IDE")
+        print("<project-name> will be in "
+              "`.vagga/.virtualbox-volume` "
+              "after you run vagga command for the first time")
+
+
 def find_volume(vagga):
     vol_file = vagga.vagga_dir / '.virtualbox-volume'
     if vol_file.exists():
@@ -62,12 +80,19 @@ def main():
                     BASE_SSH_COMMAND + args.command[2:],
                 ).wait()
             return sys.exit(returncode)
+        elif args.command[1:2] == ['up']:
+            virtualbox.init_vm(new_storage_callback=unison.clean_local_dir)
+            return sys.exit(0)
+        elif args.command[1:2] == ['down']:
+            virtualbox.stop_vm()
+            return sys.exit(0)
         elif args.command[1:2] == ['upgrade_vagga']:
             returncode = subprocess.Popen(
                     BASE_SSH_COMMAND + ['/usr/local/bin/upgrade-vagga'],
                 ).wait()
             return sys.exit(returncode)
         elif args.command[1:2] == ['mount']:
+            virtualbox.init_vm(new_storage_callback=unison.clean_local_dir)
             dir = BASE / 'remote'
             if not dir.exists():
                 dir.mkdir()
@@ -76,34 +101,21 @@ def main():
                    '127.0.0.1:/vagga', str(dir)]
             print("Running", ' '.join(cmd), file=sys.stderr)
             if (dir / 'lost+found').exists():
-                print("Error looks like your volume is already mounted.",
+                print("It looks like your volume is already mounted.",
                     file=sys.stderr)
-                print("You only need to mount the volume once",
+                print("You only need to mount the volume once.",
                     file=sys.stderr)
+                ide_hint()
                 return sys.exit(1)
             returncode = subprocess.Popen(cmd).wait()
             if returncode == 0:
-                # TODO(tailhook) Simple heuristics, may be improved
-                if os.path.exists('.vagga/.virtualbox-volume'):
-                    with open('.vagga/.virtualbox-volume') as f:
-                        volume = f.read().strip()
-                    print("Now you can add "
-                          "~/.vagga/remote/"+volume+
-                              "/.vagga/<container-name>/dir "
-                          "to the search paths of your IDE")
-                else:
-                    print("Now you can add "
-                          "~/.vagga/remote/<project-name>"
-                          "/.vagga/<container-name>/dir "
-                          "to the search paths of your IDE")
-                    print("<project-name> will be in "
-                          "`.vagga/.virtualbox-volume` "
-                          "after you run vagga command for the first time")
+                ide_hint()
             return sys.exit(returncode)
         else:
             print("Unknown command", repr((args.command[1:2] or [''])[0]),
                   file=sys.stderr)
-            print("Specify one of `ssh`, `upgrade_vagga`, `mount`",
+            print("Specify one of "
+                  "`ssh`, `upgrade_vagga`, `mount`, `up`, 'down'",
                   file=sys.stderr)
             return sys.exit(1)
 

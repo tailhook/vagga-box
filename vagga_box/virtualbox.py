@@ -33,6 +33,13 @@ def check_sha256(filename, sum):
         raise ValueError("Sha256 sum mismatch")
 
 
+def stop_vm():
+    id, ver = find_vm()
+    if id:
+        subprocess.check_call(['VBoxManage', 'controlvm', id,
+                               'acpipowerbutton'])
+
+
 def create_vm():
     tmpname = 'vagga-tmp'
     subprocess.check_call(['ssh-keygen', '-R', '[127.0.0.1]:7022'])
