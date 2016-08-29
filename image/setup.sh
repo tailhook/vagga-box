@@ -24,6 +24,8 @@ chown user /vagga /vagga/.unison /vagga/.cache
 curl -sfS $HTTP_PREFIX/vagga.settings.yaml > /home/user/.vagga.yaml
 curl -sfS $HTTP_PREFIX/vagga-ssh.sh > /usr/local/bin/vagga-ssh.sh
 chmod +x /usr/local/bin/vagga-ssh.sh
+curl -sfS $HTTP_PREFIX/find-volume.sh > /usr/local/bin/find-volume.sh
+chmod +x /usr/local/bin/find-volume.sh
 
 curl -sfS $HTTP_PREFIX/upgrade-vagga.sh > /usr/local/bin/upgrade-vagga
 chmod +x /usr/local/bin/upgrade-vagga

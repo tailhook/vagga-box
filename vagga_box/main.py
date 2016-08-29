@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import time
@@ -21,13 +22,28 @@ BASE_SSH_COMMAND = [
     '-i', os.path.join(os.path.dirname(__file__), 'id_rsa'),
     '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
 ]
+VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
 
 
 def find_volume(vagga):
     vol_file = vagga.vagga_dir / '.virtualbox-volume'
     if vol_file.exists():
-        return vol_file.open('rt').read().strip()
-    raise NotImplementedError()
+        name = vol_file.open('rt').read().strip()
+        if VOLUME_RE.match(name):
+            return name
+    basename = vagga.base.stem
+    if not VOLUME_RE.match(basename):
+        basename = 'unknown'
+    name = subprocess.check_output(BASE_SSH_COMMAND +
+        ['/usr/local/bin/find-volume.sh'], env={
+            'VAGGA_PROJECT_NAME': basename,
+        }).decode('ascii').strip()
+    if not VOLUME_RE.match(name):
+        raise RuntimeError("Command returned bad volume name {!r}"
+                           .format(name))
+    with vol_file.open('w') as f:
+        f.write(name)
+    return name
 
 
 def main():

@@ -18,7 +18,9 @@ CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'ssh_config')
 
 
 def clean_local_dir():
-    shutil.rmtree(str(BASE / 'unison'))
+    dir = BASE / 'unison'
+    if dir.exists():
+        shutil.rmtree(str(dir))
 
 
 def _unison_cli(vagga):
