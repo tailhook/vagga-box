@@ -18,9 +18,10 @@ from . import unison
 
 log = logging.getLogger(__name__)
 BASE_SSH_COMMAND = [
-    'ssh', 'user@127.0.0.1', '-t',
+    'ssh', '-t',
     '-i', os.path.join(os.path.dirname(__file__), 'id_rsa'),
     '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
+    'user@127.0.0.1',
 ]
 VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
 
@@ -52,19 +53,21 @@ def main():
         # TODO(tailhook) should we use RUST_LOG like in original vagga?
         level=os.environ.get('VAGGA_LOG', 'WARNING'))
 
-    if sys.argv[1:2] == ['_box']:
+    args = arguments.parse_args()
+
+    if args.command[0:1] == ['_box']:
         # use real argparse here
-        if sys.argv[2:3] == ['ssh']:
+        if args.command[1:2] == ['ssh']:
             returncode = subprocess.Popen(
-                    BASE_SSH_COMMAND + sys.argv[2:]
+                    BASE_SSH_COMMAND + args.command[2:],
                 ).wait()
             return sys.exit(returncode)
-        elif sys.argv[2:3] == ['upgrade_vagga']:
+        elif args.command[1:2] == ['upgrade_vagga']:
             returncode = subprocess.Popen(
                     BASE_SSH_COMMAND + ['/usr/local/bin/upgrade-vagga'],
                 ).wait()
             return sys.exit(returncode)
-        elif sys.argv[2:3] == ['mount']:
+        elif args.command[1:2] == ['mount']:
             dir = BASE / 'remote'
             if not dir.exists():
                 dir.mkdir()
@@ -97,9 +100,15 @@ def main():
                           "`.vagga/.virtualbox-volume` "
                           "after you run vagga command for the first time")
             return sys.exit(returncode)
+        else:
+            print("Unknown command", repr((args.command[1:2] or [''])[0]),
+                  file=sys.stderr)
+            print("Specify one of `ssh`, `upgrade_vagga`, `mount`",
+                  file=sys.stderr)
+            return sys.exit(1)
+
 
     path, cfg, suffix = config.get_config()
-    args = arguments.parse_args()
 
     setting = settings.parse_all(path)
 
