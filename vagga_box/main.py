@@ -17,11 +17,9 @@ from . import unison
 
 log = logging.getLogger(__name__)
 BASE_SSH_COMMAND = [
-    'ssh', 'user@127.0.0.1', '-p', '7022',
-    '-i', os.path.join(os.path.dirname(__file__), 'id_rsa'), '-t',
-    '-o', 'StrictHostKeyChecking no',
-    '-o', 'CheckHostIP no',
-    '-o', 'SendEnv VAGGA_*'
+    'ssh', 'user@127.0.0.1', '-t',
+    '-i', os.path.join(os.path.dirname(__file__), 'id_rsa'),
+    '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
 ]
 
 
@@ -50,11 +48,9 @@ def main():
 
     vm = virtualbox.init_vm(new_storage_callback=unison.clean_local_dir)
 
-    vagga.storage_volume = find_volume(vagga)
-
     setting['auto-apply-sysctl'] = True
 
-    unison.sync_files(vagga)
+    vagga.storage_volume = find_volume(vagga)
 
     env = os.environ.copy()
     env.update({
@@ -63,18 +59,19 @@ def main():
         'VAGGA_RESOLV_CONF': open('/etc/resolv.conf').read(),
     })
 
-    if sys.argv[1:2] == ['_box_ssh']:
-        result = subprocess.run(
-            BASE_SSH_COMMAND + sys.argv[2:],
-            env=env)
-    else:
-        with virtualbox.expose_ports(vm, vagga.exposed_ports()):
+    with unison.start_sync(vagga):
+        if sys.argv[1:2] == ['_box_ssh']:
             result = subprocess.run(
-                BASE_SSH_COMMAND + [
-                '-q',
-                '/usr/local/bin/vagga-ssh.sh',
-                ] + sys.argv[1:],
+                BASE_SSH_COMMAND + sys.argv[2:],
                 env=env)
+        else:
+            with virtualbox.expose_ports(vm, vagga.exposed_ports()):
+                result = subprocess.run(
+                    BASE_SSH_COMMAND + [
+                    '-q',
+                    '/usr/local/bin/vagga-ssh.sh',
+                    ] + sys.argv[1:],
+                    env=env)
 
     sys.exit(result.returncode)
 

@@ -1,0 +1,4 @@
+Port 7022
+StrictHostKeyChecking no
+CheckHostIp no
+SendEnv VAGGA_*
