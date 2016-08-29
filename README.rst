@@ -11,12 +11,10 @@ This is a prototype which brings vagga as the first-class tool to OS X and
 Installation
 ============
 
-First `download and install virtualbox
-<https://www.virtualbox.org/wiki/Downloads>`_. The project is tested on
+First `download and install virtualbox`__. The project is tested on
 VirtualBox 5.1 but may work on earlier versions too.
 
-Currently it's (you need python >= 3.5)::
-
+Then run the following commands (assuming you have brew_ installed)::
 
     $ brew install python3 unison
     $ pip3 install git+http://github.com/tailhook/vagga-box
@@ -24,6 +22,9 @@ Currently it's (you need python >= 3.5)::
     $ vagga
     Available commands:
         run
+
+__ https://www.virtualbox.org/wiki/Downloads
+.. _brew: http://brew.sh
 
 IDE support is enabled by the following command (and requires sudo access)::
 
