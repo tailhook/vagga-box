@@ -11,7 +11,8 @@ def parse_args():
         """)
     ap.add_argument("command", nargs=argparse.REMAINDER,
         help="A vagga command to run")
-    ap.add_argument("-V", "--version", help="Show vagga version and exit")
+    ap.add_argument("-V", "--version", action='store_true',
+        help="Show vagga version and exit")
     ap.add_argument("-E", "--env", "--environ", metavar="NAME=VALUE",
         help="Set environment variable for running command")
     ap.add_argument("-e", "--use-env", metavar="VAR",
