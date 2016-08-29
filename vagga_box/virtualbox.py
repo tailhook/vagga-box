@@ -13,23 +13,24 @@ PORT_RE = re.compile('name\s*=\s*port_(\d+),')
 IMAGE_VERSION = '0.1'
 IMAGE_NAME = 'virtualbox-image-{}.vmdk'.format(IMAGE_VERSION)
 IMAGE_URL = 'http://files.zerogw.com/vagga/' + IMAGE_NAME
-IMAGE_SHA256 = 'xx'
+IMAGE_SHA256 = 'e8d84cff0acb084dc4bbbe93769e0e40c410846ff7643e6eb4a3990a882d1785'
 
 STORAGE_VERSION = '0.1'
 STORAGE_NAME = 'virtualbox-storage-{}.vmdk'.format(IMAGE_VERSION)
-STORAGE_URL = 'http://files.zerogw.com/vagga/' + IMAGE_NAME
-STORAGE_SHA256 = 'xx'
+STORAGE_URL = 'http://files.zerogw.com/vagga/' + STORAGE_NAME
+STORAGE_SHA256 = 'a70c77816dc422b0695a34678493ab874128cbf010b695de9041d09609db870d'
 
 
 def check_sha256(filename, sum):
-    with open(tmp_path, 'rb') as f:
+    with open(str(filename), 'rb') as f:
         sha = hashlib.sha256()
         while True:
             chunk = f.read()
             if not chunk:
                 break
             sha.update(chunk)
-    if sha.hex_digest() != IMAGE_SHA256:
+    if sha.hexdigest() != sum:
+        filename.unlink()
         raise ValueError("Sha256 sum mismatch")
 
 
@@ -98,9 +99,9 @@ def download_image(url, basename, hash, destination):
             image_dir.mkdir()
 
         if not image_path.exists():
-            tmp_path = image_path.with_extension('tmp')
+            tmp_path = image_path.with_suffix('.tmp')
             subprocess.check_call(
-                ['wget', '--continue', '-O', tmp_path, url])
+                ['wget', '--continue', '-O', str(tmp_path), url])
             check_sha256(tmp_path, hash)
             tmp_path.rename(image_path)
 
