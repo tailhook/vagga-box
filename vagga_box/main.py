@@ -4,10 +4,11 @@ import sys
 import json
 import time
 import shlex
+import shutil
 import logging
 import subprocess
 
-from . import BASE
+from . import BASE, KEY_PATH
 from . import config
 from . import virtualbox
 from . import runtime
@@ -17,13 +18,23 @@ from . import unison
 
 
 log = logging.getLogger(__name__)
+KEY_SOURCE = os.path.join(os.path.dirname(__file__), 'id_rsa')
 BASE_SSH_COMMAND = [
     'ssh', '-t',
-    '-i', os.path.join(os.path.dirname(__file__), 'id_rsa'),
+    '-i', str(KEY_PATH),
     '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
     'user@127.0.0.1',
 ]
 VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
+
+def check_key():
+    if not KEY_PATH.exists():
+        if not BASE.exists():
+            BASE.mkdir()
+        tmp = KEY_PATH.with_suffix('.tmp')
+        shutil.copy(str(KEY_SOURCE), str(tmp))
+        os.chmod(str(tmp), 0o600)
+        os.rename(str(tmp), str(KEY_PATH))
 
 
 def ide_hint():
@@ -72,6 +83,7 @@ def main():
         level=os.environ.get('VAGGA_LOG', 'WARNING'))
 
     args = arguments.parse_args()
+    check_key()
 
     if args.command[0:1] == ['_box']:
         # use real argparse here

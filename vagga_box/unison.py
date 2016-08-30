@@ -10,10 +10,9 @@ import logging
 from contextlib import contextmanager
 import subprocess
 
-from . import BASE
+from . import BASE, KEY_PATH
 
 log = logging.getLogger(__name__)
-KEY_FILE = os.path.join(os.path.dirname(__file__), 'id_rsa')
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'ssh_config')
 
 
@@ -42,7 +41,7 @@ def _unison_cli(vagga):
         'unison', '.',
         'ssh://user@localhost//vagga/' + vagga.storage_volume,
         '-sshargs',
-            ' -i ' + KEY_FILE +
+            ' -i ' + str(KEY_PATH) +
             ' -F ' + CONFIG_FILE,
         '-batch',# '-silent',
         '-prefer', '.',
