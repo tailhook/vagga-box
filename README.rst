@@ -16,7 +16,7 @@ VirtualBox 5.1 but may work on earlier versions too.
 
 Then run the following commands (assuming you have brew_ installed)::
 
-    $ brew install python3 unison
+    $ brew install python3 unison wget
     $ pip3 install git+http://github.com/tailhook/vagga-box
     [ .. snip .. ]
     $ vagga
