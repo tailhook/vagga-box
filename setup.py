@@ -13,6 +13,7 @@ setup(name='vagga-box',
         'PyYaml',
         'macfsevents',
       ],
+      package_data={'vagga_box': ['id_rsa', 'ssh_config']},
       entry_points = {
           'console_scripts': [
               'vagga=vagga_box.main:main',
