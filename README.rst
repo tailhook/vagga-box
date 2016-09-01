@@ -23,6 +23,9 @@ Then run the following commands (assuming you have brew_ installed)::
     Available commands:
         run
 
+Effectively it requires python >= 3.5 and unison 2.48.4 (unison is very picky
+on version numbers)
+
 __ https://www.virtualbox.org/wiki/Downloads
 .. _brew: http://brew.sh
 
