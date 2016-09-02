@@ -6,11 +6,13 @@ import fcntl
 import shlex
 import shutil
 import signal
+import socket
+import hashlib
 import logging
 from contextlib import contextmanager
 import subprocess
 
-from . import BASE, KEY_PATH
+from . import BASE, KEY_PATH, BASE_SSH_COMMAND
 
 log = logging.getLogger(__name__)
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'ssh_config')
@@ -42,8 +44,9 @@ def _unison_cli(vagga):
         'ssh://user@localhost//vagga/' + vagga.storage_volume,
         '-sshargs',
             ' -i ' + str(KEY_PATH) +
-            ' -F ' + CONFIG_FILE,
-        '-batch',# '-silent',
+            ' -F ' + CONFIG_FILE +
+            ' env UNISON=/vagga/.unison',
+        '-batch', '-silent',
         '-prefer', '.',
         '-ignore', 'Path .vagga',
         ] + ignores
@@ -63,6 +66,41 @@ def background_run(cmdline, env, logfile):
         stdin=subprocess.DEVNULL, stdout=log, stderr=log,
         preexec_fn=lambda: signal.signal(signal.SIGHUP, signal.SIG_IGN))
     return pro.pid
+
+
+def unison_archive_names(vagga):
+    myhost = socket.gethostname()
+    me = '//{}/{}'.format(myhost, vagga.base)
+    other = '//vagga//vagga/' + vagga.storage_volume
+    suffix = ';' + ', '.join(sorted([me, other])) + ';22'
+
+    hash = hashlib.md5()
+    hash.update(me.encode('ascii'))
+    hash.update(suffix.encode('ascii'))
+    my = hash.hexdigest()
+
+    hash = hashlib.md5()
+    hash.update(other.encode('ascii'))
+    hash.update(suffix.encode('ascii'))
+    other = hash.hexdigest()
+
+    return my, other
+
+
+def _remove_unison_lock(vagga):
+    """Removes unison lock on both sides
+
+    Two notes:
+
+    1. We assume that there is no remote lock if there is no local one
+    2. We assume that unison is not running (this is ensured by start_sync)
+    """
+    myhash, vmhash = unison_archive_names(vagga)
+    locallock = BASE / 'unison' / ('lk' + myhash)
+    if locallock.exists():
+        subprocess.check_call(BASE_SSH_COMMAND +
+            ['sh', '-c', '"rm /vagga/.unison/lk{} || true"'.format(vmhash)])
+        locallock.unlink()
 
 
 @contextmanager
@@ -87,6 +125,8 @@ def start_sync(vagga):
                 continue
             else:
                 cmdline, env = _unison_cli(vagga)
+
+                _remove_unison_lock(vagga)
 
                 start_time = time.time()
                 log.info("Syncing files...")
@@ -118,6 +158,6 @@ def start_sync(vagga):
         else:
             try:
                 lockfile.seek(0)
-                os.kill(int(lockfile.read()), signal.SIGTERM)
+                os.kill(int(lockfile.read()), signal.SIGINT)
             except (ValueError, OSError) as e:
                 log.info("Error when killing unison %r", e)

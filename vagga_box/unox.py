@@ -200,7 +200,7 @@ def reportRecursiveChanges(local_path, cur_lvl):
     for path_tok, new_lvl in list(cur_lvl.items()):
         reportRecursiveChanges(os.path.join(local_path, path_tok), new_lvl);
 
-def main():
+def _main():
     global replicas, pending_reps, triggered_reps
     # Version handshake.
     sendCmd("VERSION", ["1"])
@@ -267,11 +267,17 @@ def main():
         else:
             sendError("unexpected root cmd: " + cmd)
 
-if __name__ == '__main__':
+
+def main():
     try:
-        main()
+        _main()
     finally:
         for replica in replicas:
             observer.unschedule(replicas[replica]["stream"])
         observer.stop()
         observer.join()
+
+
+if __name__ == '__main__':
+    main()
+

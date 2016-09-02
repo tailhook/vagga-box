@@ -8,7 +8,7 @@ import shutil
 import logging
 import subprocess
 
-from . import BASE, KEY_PATH
+from . import BASE, KEY_PATH, BASE_SSH_COMMAND
 from . import config
 from . import virtualbox
 from . import runtime
@@ -19,12 +19,6 @@ from . import unison
 
 log = logging.getLogger(__name__)
 KEY_SOURCE = os.path.join(os.path.dirname(__file__), 'id_rsa')
-BASE_SSH_COMMAND = [
-    'ssh', '-t',
-    '-i', str(KEY_PATH),
-    '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
-    'user@127.0.0.1',
-]
 VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
 
 def check_key():
