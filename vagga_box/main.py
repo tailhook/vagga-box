@@ -152,6 +152,7 @@ def main():
         'VAGGA_VOLUME': vagga.storage_volume,
         # TODO(tailhook) move me
         'VAGGA_RESOLV_CONF': open('/etc/resolv.conf').read(),
+        'VAGGA_SETTINGS': json.dumps(setting),
     })
 
     with unison.start_sync(vagga):
