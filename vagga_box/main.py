@@ -20,6 +20,11 @@ from . import unison
 log = logging.getLogger(__name__)
 KEY_SOURCE = os.path.join(os.path.dirname(__file__), 'id_rsa')
 VOLUME_RE = re.compile('^[a-zA-Z0-9_-]+$')
+DEFAULT_RESOLV_CONF = """
+# No resolv.conf could be read from the host system
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+"""
 
 def check_key():
     if not KEY_PATH.exists():
@@ -68,6 +73,18 @@ def find_volume(vagga):
     with vol_file.open('w') as f:
         f.write(name)
     return name
+
+
+def read_resolv_conf():
+    try:
+        with open('/etc/resolv.conf', 'rt') as f:
+            data = f.read()
+    except OSError as e:
+        print("Warning: Error reading /etc/resolv.conf:", e, file=sys.stderr)
+        data = None
+    if not data:
+        data = DEFAULT_RESOLV_CONF
+    return data
 
 
 def main():
@@ -144,8 +161,7 @@ def main():
     env = os.environ.copy()
     env.update({
         'VAGGA_VOLUME': vagga.storage_volume,
-        # TODO(tailhook) move me
-        'VAGGA_RESOLV_CONF': open('/etc/resolv.conf').read(),
+        'VAGGA_RESOLV_CONF': read_resolv_conf(),
         'VAGGA_SETTINGS': json.dumps(setting),
     })
 
