@@ -41,6 +41,15 @@ You need to run it each time your machine is rebooted, or if you restarted your
 virtualbox manually.
 
 
+Upgrading
+=========
+
+Once you have installed vagga-box you can upgrade vagga inside the container
+using the following command-line::
+
+    vagga _box upgrade-vagga
+
+
 Short FAQ
 =========
 
