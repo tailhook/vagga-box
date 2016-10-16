@@ -47,7 +47,7 @@ Upgrading
 Once you have installed vagga-box you can upgrade vagga inside the container
 using the following command-line::
 
-    vagga _box upgrade-vagga
+    vagga _box upgrade_vagga
 
 
 Short FAQ
