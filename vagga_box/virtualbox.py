@@ -43,7 +43,11 @@ def stop_vm():
 
 def create_vm():
     tmpname = 'vagga-tmp'
-    subprocess.check_call(['ssh-keygen', '-R', '[127.0.0.1]:7022'])
+
+    if (pathlib.Path.home() / '.ssh/known_hosts').exists():
+        # remove old host key for this host:port in case VM was removed
+        subprocess.check_call(['ssh-keygen', '-R', '[127.0.0.1]:7022'])
+
     subprocess.check_call(['VBoxManage', 'createvm', '--register',
         '--name', tmpname, '--ostype', 'Ubuntu_64'])
     subprocess.check_call(['VBoxManage', 'modifyvm', tmpname,
