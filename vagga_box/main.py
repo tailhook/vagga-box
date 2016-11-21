@@ -171,7 +171,7 @@ def main():
                     BASE_SSH_COMMAND + [
                     '-q',
                     '/usr/local/bin/vagga-ssh.sh',
-                    ] + sys.argv[1:],
+                    ] + list(map(shlex.quote, sys.argv[1:])),
                     env=env,
                 ).wait()
 
