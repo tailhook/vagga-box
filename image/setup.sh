@@ -27,9 +27,14 @@ chmod +x /usr/local/bin/vagga-ssh.sh
 curl -sfS $HTTP_PREFIX/find-volume.sh > /usr/local/bin/find-volume.sh
 chmod +x /usr/local/bin/find-volume.sh
 
+# install vagga stable version
+curl -sfS $HTTP_PREFIX/install-vagga.sh > /usr/local/bin/install-vagga
+chmod +x /usr/local/bin/install-vagga
+/usr/local/bin/install-vagga
+
+# but allow to upgrade to latest testing
 curl -sfS $HTTP_PREFIX/upgrade-vagga.sh > /usr/local/bin/upgrade-vagga
 chmod +x /usr/local/bin/upgrade-vagga
-/usr/local/bin/upgrade-vagga
 
 cat <<NFS >> /etc/exports
 /vagga *(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000)
@@ -38,7 +43,7 @@ rc-update add nfs
 rc-update add nfsmount
 rc-update add netmount
 
-apk add virtualbox-guest-additions --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+apk add virtualbox-guest-additions --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 apk add shadow-uidmap --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 
 cat <<SYSCTL > /etc/sysctl.d/01-vagga.conf
@@ -56,3 +61,4 @@ AcceptEnv VAGGA_*
 SSHCONFIG
 
 rm -rf /var/run/*
+rm /etc/profile.d/proxy.sh
