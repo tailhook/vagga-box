@@ -42,6 +42,7 @@ NFS
 rc-update add nfs
 rc-update add nfsmount
 rc-update add netmount
+rc-update add ntpd
 
 apk add virtualbox-guest-additions --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 apk add shadow-uidmap --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
