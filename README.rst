@@ -53,6 +53,16 @@ using the following command-line::
 Short FAQ
 =========
 
+**Virtualbox disk image is too small, what to do?**
+
+1. Shutdown the box ``vagga _box down``
+
+2. Resize image using virtualbox CLI (or find respective option in GUI)::
+
+    VBoxManage modifyhd ~/.vagga/vm/storage.vdi --resize 40860
+
+3. Run vagga command normally
+
 **Why is it in python?** For a quick prototype. It will be integrated into
 vagga as soon as is proven to be useful. Or may be we leave it in python if
 it would be easier to install.
