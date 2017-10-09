@@ -9,3 +9,4 @@ BASE_SSH_COMMAND = [
     '-F', os.path.join(os.path.dirname(__file__), 'ssh_config'),
     'user@127.0.0.1',
 ]
+BASE_SSH_COMMAND_QUIET = BASE_SSH_COMMAND + ['-o LogLevel=QUIET']
