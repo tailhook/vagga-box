@@ -49,6 +49,32 @@ using the following command-line::
 
     vagga _box upgrade_vagga
 
+Changing the disk size
+======================
+
+By default, the disk size in Virtualbox is set to 20 GB. If necessary, it can be increased by the following steps:
+
+1. Change VM's image size::
+
+        $ vagga _box down
+        $ VBoxManage modifyhd ~/.vagga/vm/storage.vdi --resize 40860
+        $ vagga _box up
+
+2. Change partition size inside VM::
+
+        $ vagga _box ssh
+        $ sudo apk add cfdisk e2fsprogs-extra
+        $ sudo cfdisk /dev/sdb
+            [ .. Delete /dev/sdb1 ..]
+            [ .. New partition / default size / Primary .. ]
+            [ .. Write changes / Quit .. ]
+        $ sudo reboot
+
+3. Final steps::
+
+        $ vagga _box ssh
+        $ sudo resize2fs /dev/sdb1
+        $ sudo df -h  # Check size
 
 Short FAQ
 =========
