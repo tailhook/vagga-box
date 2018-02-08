@@ -1,0 +1,8 @@
+mixins:
+- first_mixin.yaml
+- dir/nested_mixins.yaml
+
+commands:
+  root: !Command
+    container: x
+    run: y

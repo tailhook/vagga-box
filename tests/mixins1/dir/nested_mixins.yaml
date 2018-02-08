@@ -1,0 +1,4 @@
+containers:
+  nested:
+mixins:
+- nested1.yaml

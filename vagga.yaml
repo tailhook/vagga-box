@@ -1,0 +1,13 @@
+containers:
+  test:
+    setup:
+    - !Alpine v3.7
+    - !PipConfig { dependencies: true }
+    - !Py3Install [PyYaml, pytest]
+
+commands:
+  test: !Command
+    container: test
+    environ:
+      PYTHONPATH: /work
+    run: [pytest]
