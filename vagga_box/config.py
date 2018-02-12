@@ -48,13 +48,14 @@ def read_mixins(base_filename, mixin_list, dest):
         except Exception as e:
             print("Error reading mixin {}: {}".format(filename, e),
                 file=sys.stderr)
-        for name, val in data.get('containers', {}).items():
-            if name not in dest['containers']:
-                dest['containers'][name] = val
-        for name, val in data.get('commands', {}).items():
-            if name not in dest['commands']:
-                dest['commands'][name] = val
-        read_mixins(filename, data.get('mixins', ()), dest)
+        else:
+            for name, val in data.get('containers', {}).items():
+                if name not in dest['containers']:
+                    dest['containers'][name] = val
+            for name, val in data.get('commands', {}).items():
+                if name not in dest['commands']:
+                    dest['commands'][name] = val
+            read_mixins(filename, data.get('mixins', ()), dest)
 
 
 def get_config():
