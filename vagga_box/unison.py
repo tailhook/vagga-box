@@ -45,7 +45,7 @@ def _unison_cli(vagga):
         '-sshargs',
             ' -i ' + str(KEY_PATH) +
             ' -F ' + CONFIG_FILE +
-            ' env UNISON=/vagga/.unison',
+            ' exec sudo sh -c "ulimit -n 20000; exec sudo -u user env UNISON=/vagga/.unison \\"\\$@\\"" --',
         '-batch', '-silent',
         '-prefer', '.',
         '-ignore', 'Path .vagga',
