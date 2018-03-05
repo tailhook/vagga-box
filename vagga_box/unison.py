@@ -10,12 +10,18 @@ import socket
 import hashlib
 import logging
 from contextlib import contextmanager
+import resource
 import subprocess
+import warnings
 
 from . import BASE, KEY_PATH, BASE_SSH_COMMAND
 
 log = logging.getLogger(__name__)
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'ssh_config')
+
+
+OUTER_LIMIT = 10000  # Note: should be lower than kern.maxfilesperproc
+INNER_LIMIT = 20000  # TODO(tailhook) don't know if bigger than outer is useful
 
 
 def clean_local_dir():
@@ -103,8 +109,20 @@ def _remove_unison_lock(vagga):
         locallock.unlink()
 
 
+def set_ulimit():
+    try:
+        cur, max = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if cur < OUTER_LIMIT:
+            resource.setrlimit(resource.RLIMIT_NOFILE, [OUTER_LIMIT, max])
+    except Exception as e:
+        warnings.warn("Could not set file limit to {}: {}"
+            .format(OUTER_LIMIT, e))
+
+
+
 @contextmanager
 def start_sync(vagga):
+    set_ulimit()
     lockfilename = vagga.vagga_dir / '.unison-lock'
     while True:
         lockfile = openlock(lockfilename)
