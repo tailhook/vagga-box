@@ -8,7 +8,7 @@ import shutil
 import logging
 import subprocess
 
-from . import BASE, KEY_PATH, BASE_SSH_COMMAND
+from . import BASE, KEY_PATH, BASE_SSH_COMMAND, BASE_SSH_COMMAND_QUIET
 from . import config
 from . import virtualbox
 from . import runtime
@@ -87,6 +87,13 @@ def read_resolv_conf():
     return data
 
 
+def get_vagga_version():
+    (stdout, stderr) = subprocess.Popen(
+        BASE_SSH_COMMAND_QUIET + ['vagga --version'], stdout=subprocess.PIPE,
+    ).communicate()
+    return stdout.decode('utf-8').rstrip()
+
+
 def main():
 
     logging.basicConfig(
@@ -110,9 +117,17 @@ def main():
             virtualbox.stop_vm()
             return sys.exit(0)
         elif args.command[1:2] == ['upgrade_vagga']:
+            print('Starting upgrade vagga. Current version:',
+                  get_vagga_version())
             returncode = subprocess.Popen(
-                    BASE_SSH_COMMAND + ['/usr/local/bin/upgrade-vagga'],
+                    BASE_SSH_COMMAND_QUIET + ['/usr/local/bin/upgrade-vagga'],
                 ).wait()
+            if returncode == 0:
+                print('Vagga successfully upgraded to', get_vagga_version())
+                print('All OK!')
+            else:
+                print('Failed to upgrade vagga. Exit with status:', returncode,
+                      file=sys.stderr)
             return sys.exit(returncode)
         elif args.command[1:2] == ['mount']:
             virtualbox.init_vm(new_storage_callback=unison.clean_local_dir)
