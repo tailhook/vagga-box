@@ -25,7 +25,7 @@ def _exposed_ports(vagga, commands):
         yield from _get_ports(cmd)
         # and in children commands (for supervise)
         for child in cmd.get('children', {}).values():
-            yield from _get_ports(cmd)
+            yield from _get_ports(child)
 
 
 def _get_ports(cmd):

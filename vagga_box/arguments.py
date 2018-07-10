@@ -1,7 +1,7 @@
 import argparse
 
 
-def parse_args():
+def parse_args(args=None):
     ap = argparse.ArgumentParser(
         usage="vagga [options] COMMAND [ARGS...]",
         description="""
@@ -39,4 +39,4 @@ def parse_args():
               beforehand, for your convenience. Also builtin commands \
               (those starting with underscore) do not work with \
               `vagga -m`")
-    return ap.parse_args()
+    return ap.parse_args(args=args)

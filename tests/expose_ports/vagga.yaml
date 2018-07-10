@@ -1,0 +1,11 @@
+commands:
+  run: !Command
+    _expose-ports: [10, 20]
+
+  super: !Supervise
+    _expose-ports: [110]
+    children:
+      one: !Supervise
+        _expose-ports: [210, 220]
+      two: !Supervise
+        _expose-ports: [230]
