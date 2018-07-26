@@ -4,6 +4,13 @@ import pathlib
 import yaml
 
 
+LOCAL_MIXINS = (
+    'vagga.local.yaml',
+    '.vagga.local.yaml',
+    '.vagga/local.yaml',
+)
+
+
 class FancyLoader(yaml.Loader):
     pass
 
@@ -34,6 +41,10 @@ def find_config():
         vagga = path / 'vagga.yaml'
         if vagga.exists():
             return path, vagga, suffix
+        for fname in LOCAL_MIXINS:
+            vagga = path / fname
+            if vagga.exists():
+                return path, vagga, suffix
         suffix = path.parts[-1] / suffix
         path = path.parent
     raise RuntimeError("No vagga.yaml found in path {!r}".format(path))
@@ -68,5 +79,14 @@ def get_config():
     data['containers'] = mix['containers']
     mix['commands'].update(data.get('commands', {}))
     data['commands'] = mix['commands']
+
+    local_mixin_list = [
+        fname for fname in LOCAL_MIXINS if (dir / fname).exists()
+    ]
+    if local_mixin_list:
+        local_mix = {'containers': {}, 'commands': {}}
+        read_mixins(vagga, local_mixin_list[::-1], local_mix)
+        data['containers'].update(local_mix['containers'])
+        data['commands'].update(local_mix['commands'])
 
     return dir, data, suffix
