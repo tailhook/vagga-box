@@ -9,6 +9,7 @@ import logging
 import subprocess
 
 from . import BASE, KEY_PATH, BASE_SSH_COMMAND, BASE_SSH_COMMAND_QUIET
+from . import BASE_SSH_TTY_COMMAND
 from . import config
 from . import virtualbox
 from . import runtime
@@ -107,7 +108,7 @@ def main():
         # use real argparse here
         if args.command[1:2] == ['ssh']:
             returncode = subprocess.Popen(
-                    BASE_SSH_COMMAND + args.command[2:],
+                    BASE_SSH_TTY_COMMAND + args.command[2:],
                 ).wait()
             return sys.exit(returncode)
         elif args.command[1:2] == ['up']:
@@ -183,7 +184,7 @@ def main():
     with unison.start_sync(vagga):
         with virtualbox.expose_ports(vm, vagga.exposed_ports()):
             result = subprocess.Popen(
-                    BASE_SSH_COMMAND + [
+                    BASE_SSH_TTY_COMMAND + [
                     '-q',
                     '/usr/local/bin/vagga-ssh.sh',
                     ] + list(map(shlex.quote, sys.argv[1:])),
