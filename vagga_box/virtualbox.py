@@ -55,7 +55,7 @@ def create_vm():
         '--memory', '2048',
         '--cpus', '2',
         '--nic1', 'nat',
-        '--nictype1', 'virtio',
+        '--nictype1', '82545EM',
         '--rtcuseutc', 'on',
         '--natpf1', 'SSH,tcp,,7022,,22',
         '--natpf1', 'NFSt1,tcp,,7049,,2049',
